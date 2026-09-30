@@ -13,6 +13,7 @@
     "export:data": "node scripts/export-data.mjs",
     "generate:brand-assets": "node scripts/generate-brand-assets.mjs",
     "qa:flow": "node scripts/qa-flow.mjs",
+    "qa:notion": "node scripts/qa-notion.mjs",
     "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {

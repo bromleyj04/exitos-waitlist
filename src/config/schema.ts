@@ -87,6 +87,11 @@ const surveyQuestionSchema = z.discriminatedUnion("type", [
   }),
 ]);
 
+const notionSurveyMappingSchema = z.object({
+  property: z.string().min(1).optional(),
+  bodySection: z.string().min(1).optional(),
+});
+
 export const themePresetSchema = z.enum(["minimal-light", "minimal-dark", "warm-gradient", "green-gradient"]);
 export const reasonVisualConceptSchema = z.enum(reasonVisualConcepts);
 
@@ -157,6 +162,11 @@ export const waitlistProjectSchema = z.object({
     introDescription: z.string().min(1),
     questions: z.array(surveyQuestionSchema).min(1),
   }),
+  integrations: z.object({
+    notion: z.object({
+      surveyMappings: z.record(z.string(), notionSurveyMappingSchema).default({}),
+    }).optional(),
+  }).optional(),
   referral: z.object({
     enabled: z.boolean().default(true),
     rewardCopy: z.string().min(1),

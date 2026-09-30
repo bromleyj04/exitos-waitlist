@@ -1,4 +1,5 @@
 import { FileStorage } from "./file";
+import { NotionStorage } from "./notion";
 import { PostgresStorage } from "./postgres";
 import type { WaitlistStorage } from "./types";
 
@@ -14,13 +15,17 @@ export function getStorage() {
     return storage;
   }
 
+  if (adapter === "notion") {
+    storage = new NotionStorage();
+    return storage;
+  }
+
   if (process.env.NODE_ENV === "production") {
     throw new Error(
-      "File storage is development-only. Set DATABASE_URL or WAITLIST_STORAGE=postgres for production deployments.",
+      "File storage is development-only. Set DATABASE_URL, WAITLIST_STORAGE=postgres, or WAITLIST_STORAGE=notion for production deployments.",
     );
   }
 
   storage = new FileStorage();
   return storage;
 }
-

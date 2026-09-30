@@ -121,8 +121,6 @@ async function capture() {
     await screenshot(page, "light");
     await navigate(page, `${baseUrl}/?theme=minimal-dark`, desktop);
     await screenshot(page, "dark");
-    await navigate(page, `${baseUrl}/?theme=warm-gradient`, desktop);
-    await screenshot(page, "warm-gradient");
     await navigate(page, `${baseUrl}/?theme=green-gradient`, desktop);
     await screenshot(page, "green-gradient");
     await navigate(page, `${baseUrl}/?theme=green-gradient`, mobile);

@@ -6,6 +6,8 @@ Most waitlist templates stop at collecting an email address. ExitOS Waitlist Kit
 
 It is deliberately small. It is not a SaaS marketing site, page builder, CMS, CRM, email sequence tool, dashboard, or scoring engine.
 
+Live demo: [https://exitos-waitlist.vercel.app](https://exitos-waitlist.vercel.app)
+
 ## Screenshots
 
 Minimal light:
@@ -15,10 +17,6 @@ Minimal light:
 Minimal dark:
 
 ![Dark theme](artifacts/screenshots/dark.png)
-
-Warm gradient:
-
-![Warm gradient theme](artifacts/screenshots/warm-gradient.png)
 
 Green gradient:
 
@@ -56,7 +54,21 @@ Referral success:
 - Solar Icons for optional large content pictograms
 - `next/font`
 - Zod validation
-- Postgres via `pg`
+- Notion API adapter for founder-facing Validation Prospects
+- Postgres via `pg` for advanced durable deployments
+
+## Visual System
+
+The visual system is intentionally locked for v1:
+
+- Lucide is used for functional interface controls such as arrows, chevrons, copy, close, and form controls.
+- Solar Icons are used for larger expressive Reason visuals.
+- Reason visuals resolve through a semantic registry, so project config uses concepts such as `capture-intent`, `qualify`, and `referral` rather than importing icon components directly.
+- Reason visuals are sized as restrained pictograms, not oversized feature art.
+- Theme presets are limited to `minimal-light`, `minimal-dark`, and `green-gradient` for publish-ready v1. `warm-gradient` remains in the codebase as an experimental/reference preset but is not the primary standard demo.
+- All styling should continue to use semantic tokens instead of scattered project-specific colors.
+
+Solar attribution is required when Solar Icons are used; see `NOTICE.md`.
 
 ## Local Setup
 
@@ -89,10 +101,23 @@ Copy `.env.example` to `.env.local`.
 DATABASE_URL=
 POSTGRES_SSL=true
 WAITLIST_STORAGE=postgres
+NOTION_TOKEN=
+NOTION_DATABASE_ID=
+WAITLIST_NOTIFY_ENDPOINT=
+WAITLIST_NOTIFY_SECRET=
+NOTIFY_REPLAY_TOKEN=
 EXPORT_TOKEN=
 ```
 
-Production deployments should use Postgres through `DATABASE_URL`. File storage is development-only and throws in production.
+Storage options:
+
+- `file`: local development only
+- `notion`: current manual/self-hosted Notion fallback
+- `postgres`: advanced production storage
+
+The recommended future standalone waitli.st experience is Connect Notion through hosted waitli.st OAuth. That hosted onboarding flow belongs to the separate waitli.st project, not this repository.
+
+For this open-source repository today, Notion mode uses a manual internal integration and database ID. Postgres remains fully supported and is still the proven Vercel/Neon QA path.
 
 ## Project Config
 
@@ -234,7 +259,6 @@ Included presets:
 
 - `minimal-light`
 - `minimal-dark`
-- `warm-gradient`
 - `green-gradient`
 
 Preview without editing config:
@@ -242,7 +266,6 @@ Preview without editing config:
 ```txt
 /?theme=minimal-light
 /?theme=minimal-dark
-/?theme=warm-gradient
 /?theme=green-gradient
 ```
 
@@ -283,10 +306,166 @@ Adapters:
 
 - `FileStorage`: development only, writes `.data/waitlist.json`
 - `PostgresStorage`: production, selected automatically when `DATABASE_URL` is present
+- `NotionStorage`: founder-facing Validation Prospects CRM, selected with `WAITLIST_STORAGE=notion`
 
 The Postgres adapter creates the required tables if they do not exist.
 
 Do not deploy to Vercel expecting `.data/waitlist.json` to persist. It will not.
+
+### Notion Storage
+
+Notion is intended to be the standard founder-facing Validation CRM. The adapter creates one Notion page per prospect immediately after email capture, then updates that same page when the survey is completed.
+
+Email capture:
+
+- creates a stable `Prospect ID`
+- creates the Notion prospect page immediately
+- stores email, source/UTM, referral code, referred-by code, and joined timestamp
+- sets `Survey Status` to `Pending`
+- emits `prospect.created` to the optional Notify endpoint after Notion persistence succeeds
+
+Survey completion:
+
+- finds the same prospect by `Prospect ID`
+- updates `Survey Status` to `Completed`
+- stores mapped structured answers in Notion properties
+- appends unmapped/free-text answers to the page body under `Survey Answers`
+- emits `prospect.survey_completed`
+
+Notion does not store page-view/UI analytics events and does not store waitli.st notification scheduling state. It is for Validation information, not infrastructure state.
+
+### Validation Prospects Schema
+
+Default visible/core properties:
+
+- `Prospect` title
+- `Email` email
+- `Company` rich text
+- `Role` rich text
+- `Joined At` date
+- `Survey Status` select: `Pending`, `Started`, `Completed`
+- `Source` rich text
+- `Primary Use Cases` multi-select
+- `Early Access Intent` select
+- `Validation Status` select: `Unreviewed`, `Promising`, `Not Fit`, `Customer Commitment`
+
+Supporting properties can be hidden in Notion views:
+
+- `Prospect ID` rich text
+- `Referral Code` rich text
+- `Referred By` rich text
+- `Survey Completed At` date
+- `UTM Source`, `UTM Medium`, `UTM Campaign`, `UTM Term`, `UTM Content`
+
+ExitOS projects can extend this schema with richer Validate-stage fields such as Conversation Status, POC Status, and Commercial Signal. Standalone waitli.st users should start with the simpler schema above.
+
+Survey mapping lives in `src/config/project.config.ts`:
+
+```ts
+integrations: {
+  notion: {
+    surveyMappings: {
+      role: { property: "Role" },
+      signals: { property: "Primary Use Cases" },
+      timeline: { property: "Early Access Intent" },
+      problem: { bodySection: "Problem to Validate" },
+      context: { bodySection: "Additional Context" }
+    }
+  }
+}
+```
+
+Answers mapped to `property` update structured Notion columns. Unmapped answers and answers mapped only to `bodySection` are written into the Notion page body under `Survey Answers`.
+
+### Manual Notion Setup
+
+The future waitli.st product should make this a Connect Notion OAuth flow. Until then, self-hosted open-source users can use the manual fallback:
+
+1. Create or duplicate a Notion database named `Validation Prospects`.
+2. Add the schema above.
+3. Create a Notion internal integration.
+4. Share the database with that integration.
+5. Set:
+
+```bash
+WAITLIST_STORAGE=notion
+NOTION_TOKEN=secret_...
+NOTION_DATABASE_ID=...
+NOTION_WORKSPACE_ID=...
+```
+
+6. Optionally set Notify:
+
+```bash
+WAITLIST_NOTIFY_ENDPOINT=https://notify.example.com/events
+WAITLIST_NOTIFY_SECRET=...
+NOTIFY_REPLAY_TOKEN=...
+```
+
+`NOTIFY_REPLAY_TOKEN` protects `POST /api/notify/replay`. If unset, the route falls back to `EXPORT_TOKEN`.
+
+### Notify Events
+
+The runtime can emit signed, idempotent events to a future waitli.st Notify-compatible service:
+
+- `prospect.created`
+- `prospect.survey_completed`
+
+Each request includes:
+
+- `Idempotency-Key: <projectId>:<eventType>:<prospectId>`
+- `X-Waitlist-Event`
+- `X-Waitlist-Signature: sha256=<hmac>` when `WAITLIST_NOTIFY_SECRET` is set
+
+Notify failures are non-fatal after Notion persistence succeeds. The client performs bounded immediate retries for transient failures. The hosted waitli.st Notify service is responsible for delay, suppression, delivery state, central Resend transport, and long-running retry queues.
+
+Example `prospect.created` payload:
+
+```json
+{
+  "eventId": "validation-demo:prospect.created:pr_abc123",
+  "eventType": "prospect.created",
+  "occurredAt": "2026-09-30T20:00:00.000Z",
+  "project": {
+    "id": "validation-demo",
+    "name": "SignalKit"
+  },
+  "prospect": {
+    "prospectId": "pr_abc123",
+    "email": "founder@example.com",
+    "referralCode": "ABC123",
+    "source": "waitlist",
+    "utm": {}
+  },
+  "notion": {
+    "workspaceId": "workspace-id",
+    "databaseId": "database-id",
+    "pageId": "page-id",
+    "pageUrl": "https://www.notion.so/..."
+  }
+}
+```
+
+`prospect.survey_completed` uses the same identity fields and adds:
+
+```json
+{
+  "survey": {
+    "completedAt": "2026-09-30T20:05:00.000Z",
+    "summary": "role: founder; timeline: this_month",
+    "answers": []
+  }
+}
+```
+
+Replay a Notify event:
+
+```bash
+curl -X POST https://your-domain.com/api/notify/replay \
+  -H "Authorization: Bearer $NOTIFY_REPLAY_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"personId":"pr_abc123","eventType":"prospect.created"}'
+```
 
 ## Analytics
 
@@ -323,17 +502,36 @@ If `EXPORT_TOKEN` is unset, `/api/export` is public. Set it before using a real 
 
 ## Deploy To Vercel
 
+Recommended future standalone path: Connect Notion through waitli.st OAuth. That belongs to the separate hosted waitli.st project.
+
+Current open-source Notion fallback:
+
+1. Create the Notion `Validation Prospects` database.
+2. Create a Notion internal integration and share the database with it.
+3. Set `WAITLIST_STORAGE=notion`.
+4. Set `NOTION_TOKEN` and `NOTION_DATABASE_ID`.
+5. Set `EXPORT_TOKEN`.
+6. Optionally set `WAITLIST_NOTIFY_ENDPOINT`, `WAITLIST_NOTIFY_SECRET`, and `NOTIFY_REPLAY_TOKEN`.
+7. Deploy from GitHub.
+
+Advanced Postgres path:
+
 1. Create a Postgres database with a provider such as Neon, Supabase, Railway, Render, or Vercel-compatible Postgres.
-2. Set `DATABASE_URL` in Vercel project environment variables.
+2. Set `DATABASE_URL`.
 3. Set `WAITLIST_STORAGE=postgres`.
 4. Set `EXPORT_TOKEN`.
 5. Deploy from GitHub.
-6. Submit a signup, complete the survey, create a referred signup, and verify `/api/export`.
 
 You can run the same flow check against a deployed URL:
 
 ```bash
 QA_BASE_URL=https://your-domain.com EXPORT_TOKEN=your-token npm run qa:flow
+```
+
+Run the mock Notion/Notify contract QA locally:
+
+```bash
+npm run qa:notion
 ```
 
 ## Create Another Theme
@@ -349,7 +547,7 @@ QA_BASE_URL=https://your-domain.com EXPORT_TOKEN=your-token npm run qa:flow
 ```txt
 Use this repository as the foundation for my project's Validation waitlist.
 
-First interview me or inspect the provided materials to understand:
+First understand the project. Interview me or inspect the provided materials to learn:
 - the product idea;
 - target user;
 - positioning;
@@ -360,12 +558,14 @@ First interview me or inspect the provided materials to understand:
 - referral incentive;
 - preferred theme direction.
 - whether the project already has a logo or mark.
+- whether I will use the future waitli.st Connect Notion/Notify path or the current open-source manual fallback.
 
 Then configure the existing boilerplate rather than redesigning it.
 
 Use src/config/project.config.ts for project copy, brand assets, SEO, offer, reasons, FAQ, survey, referral copy, and theme preset.
 Use the survey object in that same config for all survey questions.
 Use theme.preset and the semantic tokens in src/app/globals.css for visual changes.
+Use the semantic Reason visual registry for the three reason blocks. Do not import expressive icon components directly into project config.
 
 For identity, follow skills/temporary-validation-identity.md.
 If the project already has a logo or mark, use the supplied assets and generate or verify the required favicon and web icon variants. Do not redesign approved identity assets.
@@ -384,8 +584,11 @@ Preserve the shared waitlist components unless there is a clear Validation reaso
 Keep the waitlist minimal: centered project mark, headline, subheadline, email capture, offer line, optional founder video, exactly three reasons, FAQ, and footer.
 Do not add navigation, pricing, testimonials, dashboards, integration strips, repeated CTA sections, CMS behavior, auth, or scoring unless I explicitly ask and it is required for Validation.
 
-Use local JSON storage only for development. For production, configure Postgres through DATABASE_URL.
-After configuring, run npm run lint, npm run build, npm run qa:flow, test mobile layout, and check all theme presets.
+For storage, assume the standard future path is Notion through waitli.st Connect Notion, with hosted waitli.st Notify receiving prospect.created and prospect.survey_completed events. Those hosted services belong to the future waitli.st product and may not exist yet.
+
+For the current open-source/manual fallback, configure WAITLIST_STORAGE=notion with a Notion internal integration token and database ID. Configure WAITLIST_NOTIFY_ENDPOINT only if a compatible Notify receiver exists. Use local JSON only for development. Use Postgres only when the user deliberately wants the advanced adapter.
+
+After configuring, run npm run lint, npm run build, npm run qa:flow, npm run qa:notion when using Notion mode, test mobile layout, and check minimal-light, minimal-dark, and green-gradient.
 ```
 
 ## ExitOS

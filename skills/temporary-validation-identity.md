@@ -65,9 +65,11 @@ Do not default to an initial, monogram, or stylised first letter. A letterform i
 
 Avoid generic AI/startup clichés, including sparkles, brains, robots, magic wands, neural nodes, and default lightning bolts unless the product uniquely justifies them.
 
-Useful references:
+Useful references and lessons:
 
 - Study `kaankiziltug/logo-design-skill` for design discipline: brief, word map, mark type choice, geometric construction, small-size testing, one-colour testing, and concept rationale.
+- Study `sacredvoid/logo-generator` for its context scan, adaptive missing-context questions, variant preview, and export discipline. ExitOS deliberately presents one recommended mark, not 2-3 concepts.
+- Study LogoLoom for its reliable SVG-to-asset export approach: clean source SVG, optimization, favicon/icon raster output, and predictable asset locations.
 - Do not vendor or copy its trademark reference library into this repository.
 - Keep ExitOS stricter than a logo-design workflow: internally explore possibilities if needed, but present one recommended temporary mark.
 
@@ -106,6 +108,16 @@ If that sentence could describe dozens of unrelated startups, keep thinking.
 
 Start black-and-white first. Add theme colour only after the silhouette works. Do not use colour, gradients, shadows, or glass effects to rescue weak geometry.
 
+Construction guidance:
+
+- Prefer a small number of geometric primitives.
+- Keep the optical center balanced inside the 512px viewBox.
+- Leave enough inner/outer padding for favicon rendering.
+- Avoid thin negative-space cuts unless they remain readable at 16px.
+- Use fills over strokes when possible; if strokes are necessary, keep them sturdy.
+- Keep source SVG hand-readable and deterministic.
+- Do not use text elements; if an imported mark contains text, convert or replace it before export.
+
 Recommended file structure:
 
 ```txt
@@ -126,6 +138,8 @@ Run these checks:
 - **Light/dark:** works on both light and dark backgrounds?
 - **Genericity:** could this belong to 100 unrelated AI startups?
 - **Concept:** can the rationale be explained in one sentence using something true about this product?
+- **SVG validity:** opens in a browser and contains no external scripts, images, fonts, or remote references?
+- **Asset pipeline:** can `npm run generate:brand-assets` render it through Sharp without errors?
 
 If it fails any check, revise before presenting it.
 
@@ -196,12 +210,23 @@ public/icon-512.png
 src/app/favicon.ico
 ```
 
-4. Run:
+4. Inspect at least:
+
+```txt
+public/favicon-16x16.png
+public/favicon-32x32.png
+public/icon-192.png
+local waitlist hero mark
+```
+
+5. Run:
 
 ```bash
 npm run lint
 npm run build
 ```
+
+6. If the generated raster assets look muddy or collapse at small sizes, revise the source SVG and regenerate. Do not patch the PNGs directly.
 
 ## Notes For AI Coding Agents
 

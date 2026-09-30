@@ -80,5 +80,5 @@ export interface WaitlistStorage {
   countReferrals(personId: string): Promise<number>;
   saveEvent(event: Omit<AnalyticsEvent, "id" | "createdAt">): Promise<void>;
   exportData(): Promise<ValidationExport>;
+  replayNotifyEvent?(personId: string, eventType: "prospect.created" | "prospect.survey_completed"): Promise<unknown>;
 }
-

@@ -138,6 +138,18 @@ export const projectConfig = defineWaitlistProject({
       },
     ],
   },
+  integrations: {
+    notion: {
+      surveyMappings: {
+        role: { property: "Role" },
+        signals: { property: "Primary Use Cases" },
+        timeline: { property: "Early Access Intent" },
+        problem: { bodySection: "Problem to Validate" },
+        urgency: { bodySection: "Urgency" },
+        context: { bodySection: "Additional Context" },
+      },
+    },
+  },
   referral: {
     enabled: true,
     rewardCopy: "Know someone else validating a product idea? Share your link with them.",
