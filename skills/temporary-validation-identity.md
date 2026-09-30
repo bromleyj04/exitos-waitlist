@@ -61,9 +61,15 @@ Think about:
 - selected waitlist theme;
 - whether the mark can be explained in one sentence.
 
-Avoid simply turning the first letter of the product name into a generic startup icon unless that genuinely expresses the product.
+Do not default to an initial, monogram, or stylised first letter. A letterform is allowed only when the product name itself is the strongest strategic signal and the mark still works as a distinctive symbol. Most Validation marks should be pictorial, abstract, or structural symbols based on the product's promise.
 
 Avoid generic AI/startup clichés, including sparkles, brains, robots, magic wands, neural nodes, and default lightning bolts unless the product uniquely justifies them.
+
+Useful references:
+
+- Study `kaankiziltug/logo-design-skill` for design discipline: brief, word map, mark type choice, geometric construction, small-size testing, one-colour testing, and concept rationale.
+- Do not vendor or copy its trademark reference library into this repository.
+- Keep ExitOS stricter than a logo-design workflow: internally explore possibilities if needed, but present one recommended temporary mark.
 
 ## Step 3: Create One Recommended Mark
 
@@ -90,6 +96,16 @@ The mark must:
 - feel credible enough for a public Validation page;
 - remain replaceable later.
 
+Before drawing, write one sentence in your notes:
+
+```txt
+This mark represents [specific concept] because [truth from the project context].
+```
+
+If that sentence could describe dozens of unrelated startups, keep thinking.
+
+Start black-and-white first. Add theme colour only after the silhouette works. Do not use colour, gradients, shadows, or glass effects to rescue weak geometry.
+
 Recommended file structure:
 
 ```txt
@@ -112,6 +128,15 @@ Run these checks:
 - **Concept:** can the rationale be explained in one sentence using something true about this product?
 
 If it fails any check, revise before presenting it.
+
+Hard rejection checks:
+
+- It looks like a broken or accidental letter.
+- It resembles a stock app icon.
+- It needs the product name beside it to make sense.
+- It contains thin cuts, tiny notches, or decorative details that collapse at favicon size.
+- It looks like an AI-generated logo trend rather than a simple identifier.
+- It cannot be redrawn from memory after a quick glance.
 
 ## Step 5: Founder Checkpoint
 
