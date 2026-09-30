@@ -14,6 +14,7 @@ import type {
 
 let pool: Pool | null = null;
 let initialized = false;
+let initializing: Promise<void> | null = null;
 
 function getPool() {
   if (!process.env.DATABASE_URL) {
@@ -30,51 +31,59 @@ function getPool() {
 
 async function ensureSchema() {
   if (initialized) return;
+  if (initializing) return initializing;
 
-  await getPool().query(`
-    create table if not exists waitlist_people (
-      id text primary key,
-      email text not null unique,
-      first_name text,
-      referral_code text not null unique,
-      referred_by_code text,
-      referred_by_person_id text,
-      source text,
-      utm jsonb not null default '{}'::jsonb,
-      survey_status text not null default 'not_started',
-      validation_status text not null default 'unreviewed',
-      created_at timestamptz not null default now(),
-      updated_at timestamptz not null default now()
-    );
+  initializing = getPool()
+    .query(`
+      create table if not exists waitlist_people (
+        id text primary key,
+        email text not null unique,
+        first_name text,
+        referral_code text not null unique,
+        referred_by_code text,
+        referred_by_person_id text,
+        source text,
+        utm jsonb not null default '{}'::jsonb,
+        survey_status text not null default 'not_started',
+        validation_status text not null default 'unreviewed',
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
 
-    create table if not exists survey_responses (
-      id text primary key,
-      person_id text not null references waitlist_people(id) on delete cascade,
-      question_id text not null,
-      answer jsonb not null,
-      created_at timestamptz not null default now()
-    );
+      create table if not exists survey_responses (
+        id text primary key,
+        person_id text not null references waitlist_people(id) on delete cascade,
+        question_id text not null,
+        answer jsonb not null,
+        created_at timestamptz not null default now()
+      );
 
-    create table if not exists referrals (
-      id text primary key,
-      referrer_person_id text not null references waitlist_people(id) on delete cascade,
-      referred_person_id text not null references waitlist_people(id) on delete cascade,
-      referral_code text not null,
-      qualified boolean not null default false,
-      created_at timestamptz not null default now(),
-      unique(referrer_person_id, referred_person_id)
-    );
+      create table if not exists referrals (
+        id text primary key,
+        referrer_person_id text not null references waitlist_people(id) on delete cascade,
+        referred_person_id text not null references waitlist_people(id) on delete cascade,
+        referral_code text not null,
+        qualified boolean not null default false,
+        created_at timestamptz not null default now(),
+        unique(referrer_person_id, referred_person_id)
+      );
 
-    create table if not exists analytics_events (
-      id text primary key,
-      name text not null,
-      person_id text,
-      properties jsonb not null default '{}'::jsonb,
-      created_at timestamptz not null default now()
-    );
-  `);
+      create table if not exists analytics_events (
+        id text primary key,
+        name text not null,
+        person_id text,
+        properties jsonb not null default '{}'::jsonb,
+        created_at timestamptz not null default now()
+      );
+    `)
+    .then(() => {
+      initialized = true;
+    })
+    .finally(() => {
+      initializing = null;
+    });
 
-  initialized = true;
+  return initializing;
 }
 
 function mapPerson(row: Record<string, unknown>): WaitlistPerson {
