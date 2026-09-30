@@ -20,6 +20,10 @@ Warm gradient:
 
 ![Warm gradient theme](artifacts/screenshots/warm-gradient.png)
 
+Green gradient:
+
+![Green gradient theme](artifacts/screenshots/green-gradient.png)
+
 Mobile:
 
 ![Mobile theme](artifacts/screenshots/mobile.png)
@@ -35,7 +39,7 @@ Referral success:
 ## What Makes It Different
 
 - It validates demand, not landing-page design taste.
-- The page stays intentionally tiny: wordmark, headline, subheadline, email capture, offer line, optional founder video, exactly three outcomes, FAQ, footer.
+- The page stays intentionally tiny: project mark, headline, subheadline, email capture, offer line, optional founder video, exactly three outcomes, FAQ, footer.
 - The first conversion is low friction, then the survey gathers real Validation evidence.
 - Every signup gets a stable referral link.
 - `validationStatus` exists for manual review, but v1 does not include automatic scoring.
@@ -48,12 +52,15 @@ Referral success:
 - TypeScript
 - Tailwind CSS v4
 - Owned shadcn-style primitives backed by Radix UI where useful
-- Lucide icons
+- Lucide icons for functional UI controls
+- Solar Icons for optional large content pictograms
 - `next/font`
 - Zod validation
 - Postgres via `pg`
 
 ## Local Setup
+
+Requires Node.js `>=20.9.0`.
 
 ```bash
 git clone https://github.com/bromleyj04/exitos-waitlist.git
@@ -65,6 +72,14 @@ npm run dev
 Open `http://localhost:3000`.
 
 With no `DATABASE_URL`, local development uses `.data/waitlist.json`. That is only for development and demos.
+
+Run the repeatable local flow check while the dev server is running:
+
+```bash
+npm run qa:flow
+```
+
+It verifies malformed input handling, signup, duplicate email handling, survey persistence, referral attribution, analytics events, and export.
 
 ## Environment Variables
 
@@ -91,6 +106,7 @@ That one file controls:
 
 - `name`
 - `logo`
+- `brand`
 - `theme`
 - `seo`
 - `hero`
@@ -111,11 +127,55 @@ src/config/examples/supatrigger.config.ts
 
 There is no SupaTrigger-specific logic or styling inside reusable components.
 
+## Temporary Validation Identity
+
+Every project supports a simple mark above the hero headline and matching favicon/web icon assets.
+
+For the full repeatable AI-agent workflow, use:
+
+```txt
+skills/temporary-validation-identity.md
+```
+
+The active project config uses:
+
+```ts
+brand: {
+  name: "SignalKit",
+  mark: { src: "/brand/signalkit-mark.svg", alt: "SignalKit temporary validation mark" },
+  markDark: { src: "/brand/signalkit-mark-dark.svg", alt: "SignalKit temporary validation mark" },
+  markLight: { src: "/brand/signalkit-mark-light.svg", alt: "SignalKit temporary validation mark" },
+  favicon: "/favicon.svg"
+}
+```
+
+If a project already has a logo or mark, use the supplied source assets and generate or verify the favicon/web variants. Do not redesign approved identity assets.
+
+If a project has no identity, create one simple temporary Validation mark from the project name, positioning, ideal customer profile, and selected theme. The mark should:
+
+- be a simple SVG geometric symbol;
+- contain no text;
+- work at favicon size and as the centered hero mark;
+- work in monochrome;
+- include light/dark variants where needed;
+- avoid generic AI/startup clichés;
+- use the selected waitlist theme rather than creating a full brand system.
+
+Create one recommended mark, show it for approval, and continue. Do not run a branding workshop or generate a large concept set.
+
+Generate favicon/web assets from the source SVG:
+
+```bash
+npm run generate:brand-assets
+```
+
+This writes `favicon.svg`, `favicon.ico`, 16/32/48px favicon PNGs, `apple-touch-icon.png`, and 192/512px web icons.
+
 ## Layout Contract
 
 Template v1 has one layout:
 
-- centered wordmark
+- centered project mark
 - large centered headline
 - short centered subheadline
 - email input and one CTA
@@ -133,13 +193,20 @@ Survey questions live in `src/config/project.config.ts`.
 
 Supported question types:
 
+- `single_line`
+- `single_choice`
 - `single_select`
+- `radio`
+- `dropdown`
+- `multi_choice`
 - `multi_select`
 - `short_text`
 - `long_text`
+- `number_range`
 - `scale`
+- `slider`
 
-The survey starts immediately after signup and completes on-site. There is no Typeform or Tally redirect by default.
+The survey starts immediately after signup, shows one focused question per step, displays progress at the top, and completes on-site. There is no Typeform or Tally redirect by default.
 
 ## Referrals
 
@@ -168,6 +235,7 @@ Included presets:
 - `minimal-light`
 - `minimal-dark`
 - `warm-gradient`
+- `green-gradient`
 
 Preview without editing config:
 
@@ -175,6 +243,7 @@ Preview without editing config:
 /?theme=minimal-light
 /?theme=minimal-dark
 /?theme=warm-gradient
+/?theme=green-gradient
 ```
 
 Theme tokens live in `src/app/globals.css` and include:
@@ -261,6 +330,12 @@ If `EXPORT_TOKEN` is unset, `/api/export` is public. Set it before using a real 
 5. Deploy from GitHub.
 6. Submit a signup, complete the survey, create a referred signup, and verify `/api/export`.
 
+You can run the same flow check against a deployed URL:
+
+```bash
+QA_BASE_URL=https://your-domain.com EXPORT_TOKEN=your-token npm run qa:flow
+```
+
 ## Create Another Theme
 
 1. Add a preset selector to `themePresetSchema` in `src/config/schema.ts`.
@@ -284,12 +359,17 @@ First interview me or inspect the provided materials to understand:
 - survey questions;
 - referral incentive;
 - preferred theme direction.
+- whether the project already has a logo or mark.
 
 Then configure the existing boilerplate rather than redesigning it.
 
-Use src/config/project.config.ts for project copy, SEO, offer, reasons, FAQ, survey, referral copy, and theme preset.
+Use src/config/project.config.ts for project copy, brand assets, SEO, offer, reasons, FAQ, survey, referral copy, and theme preset.
 Use the survey object in that same config for all survey questions.
 Use theme.preset and the semantic tokens in src/app/globals.css for visual changes.
+
+For identity, follow skills/temporary-validation-identity.md.
+If the project already has a logo or mark, use the supplied assets and generate or verify the required favicon and web icon variants. Do not redesign approved identity assets.
+If the project has no identity, create one simple temporary Validation mark from the product name, positioning, target user, and selected theme. It should be an SVG geometric symbol with no text, work at favicon size, work as the centered hero mark, support monochrome and light/dark usage, avoid generic AI/startup clichés, and avoid turning into a full brand system. Produce one recommended mark, show it for approval, then generate assets with npm run generate:brand-assets.
 
 Preserve the shared waitlist components unless there is a clear Validation reason to change them:
 - WaitlistHero
@@ -301,11 +381,11 @@ Preserve the shared waitlist components unless there is a clear Validation reaso
 - ReferralSuccess
 - MinimalFooter
 
-Keep the waitlist minimal: centered wordmark, headline, subheadline, email capture, offer line, optional founder video, exactly three reasons, FAQ, and footer.
+Keep the waitlist minimal: centered project mark, headline, subheadline, email capture, offer line, optional founder video, exactly three reasons, FAQ, and footer.
 Do not add navigation, pricing, testimonials, dashboards, integration strips, repeated CTA sections, CMS behavior, auth, or scoring unless I explicitly ask and it is required for Validation.
 
 Use local JSON storage only for development. For production, configure Postgres through DATABASE_URL.
-After configuring, run lint/build, test signup, survey completion, referral attribution, export, mobile layout, and all theme presets.
+After configuring, run npm run lint, npm run build, npm run qa:flow, test mobile layout, and check all theme presets.
 ```
 
 ## ExitOS
@@ -313,6 +393,12 @@ After configuring, run lint/build, test signup, survey completion, referral attr
 ExitOS is a methodology and operating system for taking business ideas through Ideate, Validate, Build, Launch, Scale, and Exit.
 
 This repository is the reusable open-source waitlist runtime for the Validate stage. You can use it without using ExitOS, but its defaults are shaped by the principle: validate the idea, not the landing-page design.
+
+## Icon Attribution
+
+Lucide is used for functional interface controls. Solar Icons can be used for larger content pictograms in the Reason sections.
+
+`@solar-icons/react` is MIT licensed. The original Solar icon set is by 480 Design and is licensed under CC BY 4.0, which allows commercial use with attribution. Keep the attribution in `NOTICE.md` or equivalent project documentation when using Solar Icons.
 
 ## License
 

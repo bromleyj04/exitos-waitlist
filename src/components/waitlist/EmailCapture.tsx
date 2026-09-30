@@ -58,7 +58,7 @@ export function EmailCapture({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto mt-2 flex w-full max-w-2xl flex-col gap-3 px-5 sm:flex-row">
+    <form onSubmit={handleSubmit} className="email-capture mx-auto mt-2 flex w-full max-w-2xl flex-col gap-3 px-5 sm:flex-row">
       {config.capture.collectFirstName ? (
         <Input
           aria-label={config.capture.firstNameLabel}
@@ -66,7 +66,7 @@ export function EmailCapture({
           value={firstName}
           onChange={(event) => setFirstName(event.target.value)}
           placeholder={config.capture.firstNameLabel}
-          className="sm:max-w-44"
+          className="email-capture__input sm:max-w-44"
         />
       ) : null}
       <div className="min-w-0 flex-1">
@@ -78,13 +78,13 @@ export function EmailCapture({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           placeholder={config.capture.emailLabel}
+          className="email-capture__input"
         />
         {error ? <p className="mt-2 text-left text-xs text-red-400">{error}</p> : null}
       </div>
-      <Button type="submit" disabled={status === "submitting"} className="shrink-0">
+      <Button type="submit" disabled={status === "submitting"} className="email-capture__button shrink-0">
         {status === "submitting" ? "Joining..." : config.hero.ctaLabel}
       </Button>
     </form>
   );
 }
-

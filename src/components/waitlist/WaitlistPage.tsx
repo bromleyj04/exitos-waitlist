@@ -7,6 +7,7 @@ import { EmailCapture } from "./EmailCapture";
 import { FAQAccordion } from "./FAQAccordion";
 import { FounderVideo } from "./FounderVideo";
 import { MinimalFooter } from "./MinimalFooter";
+import { ProofStrip } from "./ProofStrip";
 import { ReasonGrid } from "./ReasonGrid";
 import { ReferralSuccess } from "./ReferralSuccess";
 import { SurveyFlow } from "./SurveyFlow";
@@ -24,9 +25,11 @@ const themeAliases: Record<string, ThemePreset> = {
   light: "minimal-light",
   dark: "minimal-dark",
   warm: "warm-gradient",
+  green: "green-gradient",
   "minimal-light": "minimal-light",
   "minimal-dark": "minimal-dark",
   "warm-gradient": "warm-gradient",
+  "green-gradient": "green-gradient",
 };
 
 const storageKey = "exit-os-waitlist-flow";
@@ -58,6 +61,15 @@ export function WaitlistPage({ config }: { config: WaitlistProjectConfig }) {
       JSON.stringify({ stage: nextStage, person: nextPerson, referralCount: nextReferralCount }),
     );
     window.history.pushState({ stage: nextStage }, "", window.location.href);
+  }
+
+  function resetFlow() {
+    canPersistFlow.current = true;
+    setStage("capture");
+    setPerson(null);
+    setReferralCount(0);
+    window.sessionStorage.removeItem(storageKey);
+    window.history.pushState({ stage: "capture" }, "", window.location.pathname);
   }
 
   useEffect(() => {
@@ -120,9 +132,9 @@ export function WaitlistPage({ config }: { config: WaitlistProjectConfig }) {
   return (
     <div className="app-shell min-h-screen overflow-hidden bg-background text-foreground">
       <main className="relative z-10">
-        <WaitlistHero config={config} />
         {stage === "capture" ? (
           <>
+            <WaitlistHero config={config} />
             <EmailCapture
               config={config}
               onSignup={({ person: signedUpPerson, referralCount: count }) => {
@@ -130,6 +142,7 @@ export function WaitlistPage({ config }: { config: WaitlistProjectConfig }) {
               }}
             />
             <ValidationOffer text={config.offer.text} />
+            <ProofStrip proof={config.proof} />
             <FounderVideo video={config.founderVideo} />
             <ReasonGrid reasons={config.reasons} />
             <FAQAccordion faq={config.faq} />
@@ -147,10 +160,10 @@ export function WaitlistPage({ config }: { config: WaitlistProjectConfig }) {
         ) : null}
 
         {stage === "success" && person ? (
-          <ReferralSuccess config={config} person={person} referralCount={referralCount} />
+          <ReferralSuccess config={config} person={person} referralCount={referralCount} onReset={resetFlow} />
         ) : null}
       </main>
-      <MinimalFooter footer={config.footer} />
+      <MinimalFooter config={config} />
     </div>
   );
 }

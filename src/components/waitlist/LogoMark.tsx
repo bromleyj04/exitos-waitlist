@@ -1,15 +1,14 @@
 import Image from "next/image";
 import type { WaitlistProjectConfig } from "@/config/schema";
 
-export function LogoMark({ logo, name }: { logo: WaitlistProjectConfig["logo"]; name: string }) {
-  if (logo.type === "image") {
-    return <Image src={logo.src} alt={logo.alt} width={160} height={40} className="mx-auto h-8 w-auto" />;
-  }
+export function LogoMark({ brand }: { brand: WaitlistProjectConfig["brand"] }) {
+  const darkMark = brand.markDark ?? brand.mark;
+  const lightMark = brand.markLight ?? brand.mark;
 
   return (
-    <div className="mx-auto inline-flex items-center gap-2 text-lg font-semibold tracking-normal text-foreground">
-      <span className="inline-block size-2.5 rounded-full bg-primary shadow-soft" />
-      <span>{logo.text || name}</span>
+    <div className="logo-mark mx-auto" aria-label={`${brand.name} mark`}>
+      <Image className="logo-mark__asset logo-mark__asset--dark" src={darkMark.src} alt={darkMark.alt} width={116} height={116} />
+      <Image className="logo-mark__asset logo-mark__asset--light" src={lightMark.src} alt={lightMark.alt} width={116} height={116} />
     </div>
   );
 }

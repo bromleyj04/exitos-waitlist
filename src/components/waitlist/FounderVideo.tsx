@@ -6,7 +6,7 @@ import type { WaitlistProjectConfig } from "@/config/schema";
 export function FounderVideo({ video }: { video: WaitlistProjectConfig["founderVideo"] }) {
   const tracked = useRef(false);
 
-  if (!video.enabled || !video.embedUrl) return null;
+  if (!video.enabled) return null;
 
   async function trackVideoEngagement() {
     if (tracked.current) return;
@@ -19,18 +19,28 @@ export function FounderVideo({ video }: { video: WaitlistProjectConfig["founderV
   }
 
   return (
-    <section className="mx-auto mt-20 w-full max-w-4xl px-5">
+    <section className="founder-video mx-auto mt-20 w-full max-w-4xl px-5">
       <div
-        className="aspect-video overflow-hidden rounded-[calc(var(--radius)*1.6)] border border-border bg-surface shadow-soft backdrop-blur-[var(--backdrop-blur)]"
+        className="founder-video__frame aspect-video overflow-hidden rounded-[calc(var(--radius)*1.6)] border border-border bg-surface shadow-soft backdrop-blur-[var(--backdrop-blur)]"
         onPointerDown={trackVideoEngagement}
       >
-        <iframe
-          className="h-full w-full"
-          src={video.embedUrl}
-          title={video.title ?? "Founder video"}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
+        {video.embedUrl ? (
+          <iframe
+            className="h-full w-full"
+            src={video.embedUrl}
+            title={video.title ?? "Founder video"}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        ) : (
+          <div className="founder-video__placeholder">
+            <div className="founder-video__note">
+              <span>A quick</span>
+              <span>intro from us</span>
+            </div>
+            <button className="founder-video__play" type="button" aria-label={video.title ?? "Play founder video"} />
+          </div>
+        )}
       </div>
     </section>
   );

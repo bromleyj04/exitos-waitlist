@@ -4,41 +4,56 @@ export const projectConfig = defineWaitlistProject({
   id: "validation-demo",
   name: "SignalKit",
   logo: { type: "text", text: "SignalKit" },
-  theme: { defaultMode: "dark", preset: "minimal-dark", accent: "emerald" },
+  brand: {
+    name: "SignalKit",
+    mark: { src: "/brand/signalkit-mark.svg", alt: "SignalKit temporary validation mark" },
+    markDark: { src: "/brand/signalkit-mark-dark.svg", alt: "SignalKit temporary validation mark" },
+    markLight: { src: "/brand/signalkit-mark-light.svg", alt: "SignalKit temporary validation mark" },
+    favicon: "/favicon.svg",
+  },
+  theme: { defaultMode: "dark", preset: "green-gradient", accent: "emerald" },
   seo: {
     title: "SignalKit validation waitlist",
     description: "Join the validation waitlist for SignalKit.",
   },
   hero: {
-    headline: "Find the first users who actually need your next product.",
+    headline: "Find early users before you build too much.",
     subheadline:
-      "A tiny validation waitlist that captures demand signals, survey evidence, and relevant referrals before you build too much.",
+      "Receive the latest updates and get early access when the validation group opens.",
     ctaLabel: "Join waitlist",
   },
   capture: {
     collectFirstName: false,
     firstNameLabel: "First name",
-    emailLabel: "Email address",
+    emailLabel: "your@email.com",
   },
   offer: {
     text: "Join the early research group and help shape the first version before public launch.",
   },
-  founderVideo: {
+  proof: {
     enabled: false,
+    label: "Built for",
+    items: ["F", "operators", "signals", "teams"],
+  },
+  founderVideo: {
+    enabled: true,
     title: "Founder preview",
   },
   reasons: [
     {
       title: "Capture real intent",
       description: "Start with email, then ask the questions that prove whether demand is specific.",
+      visual: "capture-intent",
     },
     {
       title: "Qualify the right people",
       description: "Use configured survey answers to understand urgency, fit, and use cases.",
+      visual: "qualify",
     },
     {
       title: "Measure referral pull",
       description: "Give every signup a stable link so interested people can bring similar users.",
+      visual: "referral",
     },
   ],
   faq: [
@@ -61,7 +76,7 @@ export const projectConfig = defineWaitlistProject({
     questions: [
       {
         id: "role",
-        type: "single_select",
+        type: "single_choice",
         label: "Which best describes you?",
         required: true,
         options: [
@@ -73,14 +88,41 @@ export const projectConfig = defineWaitlistProject({
       },
       {
         id: "problem",
-        type: "short_text",
+        type: "single_line",
         label: "What problem are you trying to validate?",
         required: true,
         placeholder: "A short description is enough.",
       },
       {
+        id: "signals",
+        type: "multi_choice",
+        label: "Which signals would make this worth building?",
+        description: "Choose the evidence you care about most.",
+        required: true,
+        maxSelections: 3,
+        options: [
+          { label: "People ask to pay", value: "paying_intent" },
+          { label: "People invite similar users", value: "referrals" },
+          { label: "People describe a painful workaround", value: "workaround" },
+          { label: "People want a call or pilot", value: "pilot" },
+        ],
+      },
+      {
+        id: "timeline",
+        type: "dropdown",
+        label: "When would you want access?",
+        required: true,
+        placeholder: "Choose a timeline",
+        options: [
+          { label: "This week", value: "this_week" },
+          { label: "This month", value: "this_month" },
+          { label: "This quarter", value: "this_quarter" },
+          { label: "Just researching", value: "researching" },
+        ],
+      },
+      {
         id: "urgency",
-        type: "scale",
+        type: "number_range",
         label: "How urgent is this for you?",
         min: 1,
         max: 5,
@@ -102,7 +144,12 @@ export const projectConfig = defineWaitlistProject({
     thresholdCopy: "Relevant referrals help us prioritize early access.",
   },
   footer: {
-    text: "Open-source validation waitlist by ExitOS.",
-    links: [{ label: "GitHub", href: "https://github.com/bromleyj04/exitos-waitlist" }],
+    brand: "SignalKit",
+    builtWith: { label: "Built using Waitli.st", href: "https://waitli.st" },
+    links: [
+      { label: "Privacy", href: "/privacy" },
+      { label: "Cookies", href: "/cookies" },
+      { label: "GitHub", href: "https://github.com/bromleyj04/exitos-waitlist" },
+    ],
   },
 });

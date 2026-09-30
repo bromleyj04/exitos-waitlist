@@ -73,7 +73,7 @@ async function navigate(page, url, viewport) {
     mobile: viewport.mobile ?? false,
   });
   await page.send("Page.navigate", { url });
-  await waitForText(page, "SignalKit");
+  await waitForText(page, "Find early users");
   await wait(300);
 }
 
@@ -123,10 +123,12 @@ async function capture() {
     await screenshot(page, "dark");
     await navigate(page, `${baseUrl}/?theme=warm-gradient`, desktop);
     await screenshot(page, "warm-gradient");
-    await navigate(page, `${baseUrl}/?theme=warm-gradient`, mobile);
+    await navigate(page, `${baseUrl}/?theme=green-gradient`, desktop);
+    await screenshot(page, "green-gradient");
+    await navigate(page, `${baseUrl}/?theme=green-gradient`, mobile);
     await screenshot(page, "mobile");
 
-    await navigate(page, `${baseUrl}/?theme=warm-gradient`, tall);
+    await navigate(page, `${baseUrl}/?theme=green-gradient`, tall);
     await evaluate(
       page,
       `
@@ -146,10 +148,14 @@ async function capture() {
     await evaluate(
       page,
       `
-      (() => {
+      (async () => {
         const clickText = (text) => [...document.querySelectorAll('button,label')]
-          .find((element) => element.textContent.trim() === text)?.click();
+          .find((element) => element.textContent.trim() === text || element.textContent.includes(text))?.click();
+        const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
         clickText('Founder');
+        await wait(80);
+        clickText('Continue');
+        await wait(120);
         const setValue = (selector, value) => {
           const field = document.querySelector(selector);
           const proto = field.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
@@ -157,9 +163,27 @@ async function capture() {
           field.dispatchEvent(new Event('input', { bubbles: true }));
         };
         setValue('input[placeholder="A short description is enough."]', 'Validate a focused founder waitlist before building the product.');
+        await wait(80);
+        clickText('Continue');
+        await wait(120);
+        clickText('People ask to pay');
+        clickText('People invite similar users');
+        await wait(80);
+        clickText('Continue');
+        await wait(120);
+        document.querySelector('[aria-haspopup="listbox"]').click();
+        await wait(80);
+        clickText('This month');
+        await wait(80);
+        clickText('Continue');
+        await wait(120);
         clickText('5');
+        await wait(80);
+        clickText('Continue');
+        await wait(120);
         setValue('textarea', 'I want to know whether people have a painful enough workflow to join early.');
-        document.querySelector('form').requestSubmit();
+        await wait(80);
+        [...document.querySelectorAll('button')].find((element) => element.textContent.includes('Submit answers'))?.click();
       })()
       `,
     );

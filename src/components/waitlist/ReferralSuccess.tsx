@@ -10,10 +10,12 @@ export function ReferralSuccess({
   config,
   person,
   referralCount,
+  onReset,
 }: {
   config: WaitlistProjectConfig;
   person: WaitlistPerson;
   referralCount: number;
+  onReset: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const referralUrl = useMemo(() => {
@@ -65,6 +67,9 @@ export function ReferralSuccess({
             </p>
           </>
         ) : null}
+        <Button type="button" variant="ghost" onClick={onReset} className="mt-7">
+          Back to waitlist
+        </Button>
       </div>
     </section>
   );

@@ -2,17 +2,23 @@
   "name": "exitos-waitlist",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "export:data": "node scripts/export-data.mjs",
+    "generate:brand-assets": "node scripts/generate-brand-assets.mjs",
+    "qa:flow": "node scripts/qa-flow.mjs",
     "screenshots": "node scripts/capture-screenshots.mjs"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.20",
     "@radix-ui/react-slot": "^1.3.3",
+    "@solar-icons/react": "^2.3.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.49.0",
@@ -32,6 +38,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.8",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

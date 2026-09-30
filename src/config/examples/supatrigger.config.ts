@@ -4,6 +4,13 @@ export const supatriggerConfig = defineWaitlistProject({
   id: "supatrigger",
   name: "SupaTrigger",
   logo: { type: "text", text: "SupaTrigger" },
+  brand: {
+    name: "SupaTrigger",
+    mark: { src: "/brand/signalkit-mark.svg", alt: "SupaTrigger temporary validation mark" },
+    markDark: { src: "/brand/signalkit-mark-dark.svg", alt: "SupaTrigger temporary validation mark" },
+    markLight: { src: "/brand/signalkit-mark-light.svg", alt: "SupaTrigger temporary validation mark" },
+    favicon: "/favicon.svg",
+  },
   theme: { defaultMode: "dark", preset: "minimal-dark", accent: "cyan" },
   seo: {
     title: "SupaTrigger waitlist",
@@ -32,14 +39,17 @@ export const supatriggerConfig = defineWaitlistProject({
     {
       title: "Validate real workflow demand",
       description: "Understand whether trigger orchestration is painful enough to adopt now.",
+      visual: "capture-intent",
     },
     {
       title: "Find qualified early teams",
       description: "Identify builders with live Supabase apps and urgent automation needs.",
+      visual: "qualify",
     },
     {
       title: "Shape the beta around proof",
       description: "Use survey and referral evidence before committing to a larger launch.",
+      visual: "growth",
     },
   ],
   faq: [
