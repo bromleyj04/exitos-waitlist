@@ -3,9 +3,21 @@ import path from "node:path";
 import sharp from "sharp";
 
 const root = process.cwd();
-const source = path.join(root, "public/brand/signalkit-mark.svg");
+const projectConfig = path.join(root, "src/config/project.config.ts");
 const publicDir = path.join(root, "public");
 const appFavicon = path.join(root, "src/app/favicon.ico");
+
+async function getBrandMarkSource() {
+  if (process.env.BRAND_MARK_SOURCE) return process.env.BRAND_MARK_SOURCE;
+
+  const config = await readFile(projectConfig, "utf8");
+  const match = config.match(/mark:\s*\{\s*src:\s*["']([^"']+)["']/);
+  if (!match) {
+    throw new Error("Could not find brand.mark.src in src/config/project.config.ts. Set BRAND_MARK_SOURCE to override.");
+  }
+
+  return match[1];
+}
 
 const pngTargets = [
   ["favicon-16x16.png", 16],
@@ -45,6 +57,8 @@ function buildIco(images) {
 
 await mkdir(publicDir, { recursive: true });
 
+const brandMarkSource = await getBrandMarkSource();
+const source = path.join(root, brandMarkSource.replace(/^\//, "public/"));
 const svg = await readFile(source);
 await writeFile(path.join(publicDir, "favicon.svg"), svg);
 
@@ -67,4 +81,4 @@ const ico = buildIco(icoImages);
 await writeFile(path.join(publicDir, "favicon.ico"), ico);
 await writeFile(appFavicon, ico);
 
-console.log("Generated favicon and web icon assets from public/brand/signalkit-mark.svg");
+console.log(`Generated favicon and web icon assets from ${brandMarkSource}`);
